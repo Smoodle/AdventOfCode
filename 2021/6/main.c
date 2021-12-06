@@ -1,3 +1,18 @@
+/*     _       _                 _            __    ____          _
+*     / \   __| |_   _____ _ __ | |_    ___  / _|  / ___|___   __| | ___
+*    / _ \ / _` \ \ / / _ \ '_ \| __|  / _ \| |_  | |   / _ \ / _` |/ _	\
+*   / ___ \ (_| |\ V /  __/ | | | |_  | (_) |  _| | |__| (_) | (_| |  __/
+*  /_/   \_\__,_| \_/ \___|_| |_|\__|  \___/|_|    \____\___/ \__,_|\___|
+*
+*   ____   ___ ____  _
+*  |___ \ / _ \___ \/ |
+*    __) | | | |__) | |
+*   / __/| |_| / __/| |
+*  |_____|\___/_____|_|
+*
+* Day 6
+*/
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,16 +22,8 @@ typedef struct Lanternfish {
   int timer;
 } Lanternfish;
 
-void print_fish(Lanternfish *fish, long long fish_size) {
-  for(long long i = 0; i < fish_size; i++) {
-	printf("%i ", fish[i].timer);
-  }
-
-	printf("\n ");
-}
-
-void simulate_time(int days, Lanternfish *fish, long long *fish_size, long long *max_array_size) {
-  printf("FIRST size: %lld;\n", *fish_size);
+void simulate_time_old(int days, Lanternfish *fish, long long *fish_size,
+				   long long *max_array_size) {
 
   int fish_to_add;
 
@@ -32,13 +39,7 @@ void simulate_time(int days, Lanternfish *fish, long long *fish_size, long long 
 		fish[j].timer--;
 	}
 
-
 	for (int f = 0; f < fish_to_add; f++) {
-	  if(*max_array_size == *fish_size - 1) {
-	  	fish = realloc(fish, *max_array_size * 2 * sizeof(Lanternfish));
-	  	*max_array_size = *max_array_size * 2;
-	  }
-
 	  Lanternfish lf = {8};
 	  fish[*fish_size] = lf;
 	  *fish_size = *fish_size + 1;
@@ -46,16 +47,40 @@ void simulate_time(int days, Lanternfish *fish, long long *fish_size, long long 
   }
 
   printf("FINAL FISH size: %lld;\n", *fish_size);
-  print_fish(fish, *fish_size);
 }
 
+void simulate_time_new(int days, Lanternfish *fish, long long fish_size) {
+  long long counter[9] = {0};
+
+  for (int a = 0; a < fish_size; a++) {
+	counter[fish[a].timer]++;
+  }
+
+  long long day_zero_count = 0;
+  for (int day = 0; day < days; day++) {
+	day_zero_count = counter[0];
+
+	for (int a = 0; a < 8; a++) {
+	  counter[a] = counter[a+1];
+	}
+
+	counter[8] = day_zero_count;
+	counter[6] += day_zero_count;
+  }
+
+  long long sum = 0;
+  for (int a = 0; a < 9; a++) {
+	sum += counter[a];
+  }
+
+  printf("Got %lld \n", sum);
+}
 
 int main() {
   char *pt;
   char input_string[1000];
 
-  long long max_array_size = 1000;
-
+  long long max_array_size = 999;
 
   Lanternfish *input;
   input = malloc(max_array_size * sizeof(Lanternfish));
@@ -68,21 +93,13 @@ int main() {
 
   while (pt != NULL) {
 	int num = atoi(pt);
-	Lanternfish l = { num };
+	Lanternfish l = {num};
 	input[input_size++] = l;
 
 	pt = strtok(NULL, ",");
   }
 
-  print_fish(input, input_size);
-
-  printf("Fish size: %lld\n", input_size);
-
-  simulate_time(80, input, &input_size, &max_array_size);
-
-  printf("Fish size: %lld\n", input_size);
-
-  print_fish(input, input_size);
+  simulate_time_new(256, input, input_size);
 
   free(input);
 
